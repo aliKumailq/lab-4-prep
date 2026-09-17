@@ -13,11 +13,13 @@ namespace {
 
     template <typename T, typename... Units>
     constexpr bool IsValidUnit = (std::is_same<T, Units>::value ||...); // for checking that the inserted type for click() and glance() are valid.
-    // also folding expressions are crazy man. 
+    // folding expressions are crazy man. 
     
 }
 
 class Timer {
+
+    public:
 
     using Nanos = std::chrono::nanoseconds;
     using Micros = std::chrono::microseconds;
@@ -26,30 +28,35 @@ class Timer {
     using Minutes = std::chrono::minutes;
     using Hours = std::chrono::hours;
 
+    private:
     template<typename T>
-    inline constexpr bool IsValidTimeUnit() {return IsValidUnit<T,Nanos,Micros,Millis,Seconds,Minutes,Hours>;}
+    static inline constexpr bool IsValidTimeUnit() {return IsValidUnit<T,Nanos,Micros,Millis,Seconds,Minutes,Hours>;}
+    // after testing this out, it seems that it still returns true if T is something like std::chrono::seconds.. which I dont want.
+    // will fix later if I have time.
 
 
 
     std::chrono::time_point<std::chrono::steady_clock> TimeSinceCheck;
 
-    Timer() {}
+    public:
+
+    Timer() : TimeSinceCheck(std::chrono::steady_clock::now()) {}
 
     inline void restart() {TimeSinceCheck= std::chrono::steady_clock::now();}
 
     template <typename T> 
     inline uint64_t click() {
-        static_assert(IsValidTimeUnit<T>); // making sure T is one of the alias' above.
+        static_assert(IsValidTimeUnit<T>()); // making sure T is one of the alias' above.
         const auto OldTimePoint = TimeSinceCheck;
-        TimeSinceCheck = std::chrono::steady_clock::now();
-        return std::chrono::duration_cast<T>(TimeSinceCheck - OldTimePoint);
+        restart();
+        return std::chrono::duration_cast<T>(TimeSinceCheck - OldTimePoint).count();
     }
 
     template <typename T>
     inline uint64_t glance() const {
-        static_assert(IsValidTimeUnit<T>);
+        static_assert(IsValidTimeUnit<T>());
         const auto CurrentPoint = std::chrono::steady_clock::now();
-        return std::chrono::duration_cast<T>(CurrentPoint - TimeSinceCheck);
+        return std::chrono::duration_cast<T>(CurrentPoint - TimeSinceCheck).count();
     }
 
 
