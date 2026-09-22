@@ -12,7 +12,9 @@ constexpr size_t SEED = 0;
 using TIME_FORMAT = Timer::Micros;
 
 template <typename T, typename ItemType>
-inline void append_time(T& container, const ItemType& item);
+inline void append_time(T& container, const ItemType& item) {
+    container.push_back(item);
+}
 
 template <typename U>
 inline void append_time(std::vector<U>& container, const U& item) {
