@@ -44,19 +44,20 @@ class Timer {
 
     inline void restart() {TimeSinceCheck= std::chrono::steady_clock::now();}
 
-    template <typename T> 
-    inline uint64_t click() {
-        static_assert(IsValidTimeUnit<T>()); // making sure T is one of the alias' above.
-        const auto OldTimePoint = TimeSinceCheck;
-        restart();
-        return std::chrono::duration_cast<T>(TimeSinceCheck - OldTimePoint).count();
-    }
 
     template <typename T>
     inline uint64_t glance() const {
         static_assert(IsValidTimeUnit<T>());
         const auto CurrentPoint = std::chrono::steady_clock::now();
         return std::chrono::duration_cast<T>(CurrentPoint - TimeSinceCheck).count();
+    }
+
+
+    template <typename T> 
+    inline uint64_t click() {
+        auto time = glance<T>();
+        restart();
+        return time;
     }
 
 
